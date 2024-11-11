@@ -20,15 +20,17 @@ class Carrito{
         let productosLS;
         productosLS = this.obtenerProductosLocalStorage();
         productosLS.forEach(function(productoLS){
-            if(productoLS.id === infoProducto.id){
+            if (productoLS.id === infoProducto.id) {
+                productoLS.cantidad += 1; // Aumenta la cantidad si ya está en el carrito
                 productosLS = productoLS.id;
             }
         });
+
         if(productosLS === infoProducto.id){
             //console.log('El producto ya está agregado');
             Swal.fire({
                 icon: 'warning',
-                title: 'No tenemos stock suficiente, prueba con menos unidades',
+                title: 'Este producto ya está en el carrito. Se incrementó la cantidad.',
                 timer: 2500,
                 showConfirmButton: false
             })
@@ -50,17 +52,36 @@ class Carrito{
         const row = document.createElement('tr');
         row.innerHTML= `
         <td>
-        <img src="${producto.imagen}" width=100>
+            <img src="${producto.imagen}" width="100">
         </td>
         <td>${producto.titulo}</td>
         <td>${producto.precio}</td>
         <td>
-        <a href="#" class="borrar-producto fas fa-times-circle" data-id="${producto.id}"></a>
+            <input type="number" value="${producto.cantidad || 1}" min="1" class="cantidad-producto" data-id="${producto.id}">
+        </td>
+        <td>
+            <a href="#" class="borrar-producto fas fa-times-circle" data-id="${producto.id}"></a>
         </td>
         `;
         listaProductos.appendChild(row);
         this.guardarProductosLocalStorage(producto);
     }
+
+    actualizarCantidad(e) {
+        if (e.target.classList.contains('cantidad-producto')) {
+            const idProducto = e.target.getAttribute('data-id');
+            const nuevaCantidad = parseInt(e.target.value);
+            let productosLS = this.obtenerProductosLocalStorage();
+            productosLS.forEach(function (productoLS) {
+                if (productoLS.id === idProducto) {
+                    productoLS.cantidad = nuevaCantidad; // Actualiza la cantidad
+                }
+            });
+            this.guardarProductosLocalStorage(productosLS); // Guarda los cambios
+            this.calcularTotal(); // Recalcula el total del carrito
+        }
+    }
+
 
     eliminarProducto(e){
         e.preventDefault();
@@ -130,19 +151,20 @@ class Carrito{
         productosLS.forEach(function(producto){
             const row = document.createElement('tr');
             row.innerHTML= `
-            <td>
-            <img src="${producto.imagen}" width=100>
-            </td>
+            <td><img src="${producto.imagen}" width=100></td>
             <td>${producto.titulo}</td>
             <td>${producto.precio}</td>
             <td>
-            <a href="#" class="borrar-producto fas fa-times-circle" data-id="${producto.id}"></a>
+            <input type="number" value="${producto.cantidad || 1}" min="1" class="cantidad-producto" data-id="${producto.id}">
+            </td>
+            <td>
+                <a href="#" class="borrar-producto fas fa-times-circle" data-id="${producto.id}"></a>
             </td>
             `;
             listaProductos.appendChild(row);
         });
     }
-
+    // BOTON DE ELIMINAR
     leerLocalStorageCompra(){
         let productosLS;
         productosLS = this.obtenerProductosLocalStorage();
@@ -157,7 +179,7 @@ class Carrito{
             <td>${producto.cantidad}</td>
             <td>${producto.precio * producto.cantidad}</td>
             <td>
-            <a href="#" class="borrar-producto fas fa-times-circle" data-id="${producto.id}"></a>
+            <a href="#" class="borrar-producto fas fa-times-circle" data-id="${producto.id}">ELIMINAR</a>
             </td>
             `;
             listaCompra.appendChild(row);
